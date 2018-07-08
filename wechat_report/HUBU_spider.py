@@ -25,7 +25,7 @@ def func():
     datastr=encode_res.text
     scode=datastr.split("#")[0]
     sxh=datastr.split("#")[1]
-    code="201622110710137"+"%%%"+"ZPaixzh1314"
+    code="自己的学号"+"%%%"+"自己的密码"
     encoded=""
     i=0
     while(i<len(code)):
@@ -38,8 +38,8 @@ def func():
             i=len(code)
             i=i+1
     #构造表单
-    datas={"USERNAME":"201622110710137",
-    "PASSWORD":"ZPaixzh1314",
+    datas={"USERNAME":"自己的学号",
+    "PASSWORD":"自己的密码",
     "useDogCode":"",
     "useDogCode":"",
     "encoded":encoded,
@@ -94,10 +94,10 @@ print(df)
 """for  each   in  each_content:
     print(each)"""
 #-----------------------发送邮件------------------
-#msg_from="1301646236@qq.com"
+#msg_from="***********@qq.com"
 #password="ncrvazjkvxfwggjh"
 #yag=yagmail.SMTP(msg_from,password,"smtp.qq.com","465")
-#yag.send("1072524648@qq.com","本学期成绩单",contents=["见附件",r"C:\Users\13016\Desktop\1.xlsx"])
+#yag.send("********@qq.com","本学期成绩单",contents=["见附件",r"C:\Users\13016\Desktop\1.xlsx"])
 
 
 vxnz
