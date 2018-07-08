@@ -1,0 +1,111 @@
+python2.7
+# -*- coding: utf-8 -*-
+import   sys
+sys.path.append('D:\tencent_ai\py_aiplat_sdk_201804110950\py_aiplat_demo\SDK')
+import optparse
+import time
+import apiutil
+import base64
+import json
+import  requests
+import  time
+from lxml  import  etree
+import  io
+app_key = '****'
+app_id = '********'
+my_sessoin=requests.session()
+url="http://jwxt.hubu.edu.cn/Logon.do?method=logon"
+encode_url="http://jwxt.hubu.edu.cn/Logon.do?method=logon&flag=sess"
+verification_code="http://jwxt.hubu.edu.cn/verifycode.servlet"
+res=my_sessoin.get(url)
+#获取验证码
+code_res=my_sessoin.get(verification_code)
+with   open(r"C:\Users\13016\Desktop\2.jpg",'wb')   as   f:
+    f.write(code_res.content)
+#调用腾讯api
+with open(r'C:\Users\13016\Desktop\2.jpg', 'rb') as bin_data:
+    image_data = bin_data.read()
+ai_obj = apiutil.AiPlat(app_id, app_key)
+rsp = ai_obj.getOcrGeneralocr(image_data)
+if rsp['ret'] == 0:
+    for i in rsp['data']['item_list']:
+        verifycode=i["itemstring"]
+        print(verifycode)
+else:
+    print (json.dumps(rsp, encoding="UTF-8", ensure_ascii=False, sort_keys=False, indent=4))
+
+#换位加密算法
+encode_res=my_sessoin.get(encode_url)
+print(encode_res)
+datastr=encode_res.text
+scode=datastr.split("#")[0]
+print(scode)
+sxh=datastr.split("#")[1]
+print(sxh)
+code="id"+"%%%"+"password"
+encoded=""
+i=0
+while(i<len(code)):
+    if(i<20):
+        encoded=encoded+code[i:i+1]+scode[0:int(sxh[i:i+1])]
+        scode=scode[int(sxh[i:i+1]):len(scode)]
+        i=i+1
+    else:
+        encoded=encoded+code[i:len(code)]
+        i=len(code)
+        i=i+1
+print(encoded)
+#构造表单
+username=raw_input("账号：")
+password=raw_input("密码：")
+datas={"USERNAME":username,
+"PASSWORD":password,
+"useDogCode":"",
+"useDogCode":"",
+"encoded":encoded,
+"RANDOMCODE":verifycode}
+ver_res=my_sessoin.post(url,data=datas)
+main_url="http://jwxt.hubu.edu.cn/framework/main.jsp"
+main_res=my_sessoin.get(main_url)
+print("主页状态码：{}".format(main_res))
+#零级
+header={"Referer":"http://jwxt.hubu.edu.cn/framework/main.jsp"}
+datas={}
+zero_url="http://jwxt.hubu.edu.cn/Logon.do?method=logonBySSO"
+zero_res=my_sessoin.post(zero_url,data=datas,headers=header)
+#一级菜单
+header={"Referer":"http://jwxt.hubu.edu.cn/framework/main.jsp"}
+first_url="http://jwxt.hubu.edu.cn/framework/new_window.jsp?lianjie=&winid=win1"
+first_res=my_sessoin.get(first_url,headers=header)
+#二级菜单
+header={"Accept":"image/gif, image/jpeg, image/pjpeg, application/x-ms-application, application/xaml+xml, application/x-ms-xbap, */*",
+"Referer":"http://jwxt.hubu.edu.cn/framework/new_window.jsp?lianjie=&winid=win1",
+"Accept-Language":"zh-CN",
+"User-Agent":"Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 10.0; WOW64; Trident/7.0; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; LCTE)",
+"Accept-Encoding":"gzip, deflate",
+"Host":"jwxt.hubu.edu.cn",
+"Connection":"Keep-Alive"
+}
+timestamp=int(time.time())*1000
+second_url="http://jwxt.hubu.edu.cn/jiaowu/cjgl/xszq/query_xscj.jsp?tktime={}".format(timestamp)
+print(second_url)
+second_res=my_sessoin.get(second_url,headers=header)
+#三级提交表单
+third_url="http://jwxt.hubu.edu.cn/xszqcjglAction.do?method=queryxscj"
+data={"kksj":"",
+      "kcxz":"",
+     "kcmc":"",
+     "xsfs":"qbcj",
+      "ok":""}
+header={"Referer":"http://jwxt.hubu.edu.cn/jiaowu/cjgl/xszq/query_xscj.jsp?tktime=1528474029000"}
+third_res=my_sessoin.post(third_url,data=data,headers=header)
+#----------------至此，教务系统成绩页面爬取成功！---------------
+#数据清洗
+html = third_res.content.decode("utf-8")
+selector=etree.HTML(html)
+content = selector.xpath('//*[@id="mxh"]/tr/td/text()')
+each_content=[content[i:i+15] for i  in  xrange(0,int(len(content)+1),14)]
+for  each   in  each_content:
+    msg=repr(each).decode('unicode-escape')
+    print(msg)
+
