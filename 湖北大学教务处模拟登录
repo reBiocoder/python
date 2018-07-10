@@ -1,0 +1,43 @@
+import  requests
+my_sessoin=requests.session()
+url="http://jwxt.hubu.edu.cn/Logon.do?method=logon"
+encode_url="http://jwxt.hubu.edu.cn/Logon.do?method=logon&flag=sess"
+verification_code="http://jwxt.hubu.edu.cn/verifycode.servlet"
+res=my_sessoin.get(url)
+#获取验证码
+code_res=my_sessoin.get(verification_code)
+with   open(r"C:\Users\13016\Desktop\2.jpg",'wb')   as   f:
+    f.write(code_res.content)
+#换位加密算法
+encode_res=my_sessoin.get(encode_url)
+print(encode_res)
+datastr=encode_res.text
+scode=datastr.split("#")[0]
+print(scode)
+sxh=datastr.split("#")[1]
+print(sxh)
+code="你的密码"+"%%%"+"你的账号"
+encoded=""
+i=0
+while(i<len(code)):
+    if(i<20):
+        encoded=encoded+code[i:i+1]+scode[0:int(sxh[i:i+1])]
+        scode=scode[int(sxh[i:i+1]):len(scode)]
+        i=i+1
+    else:
+        encoded=encoded+code[i:len(code)]
+        i=len(code)
+        i=i+1
+print(encoded)
+#构造表单
+code=input("请输入验证码：")
+username=input("账号：")
+password=input("密码：")
+datas={"USERNAME":username,
+"PASSWORD":password,
+"useDogCode":"",
+"useDogCode":"",
+"encoded":encoded,
+"RANDOMCODE":code}
+ver_res=my_sessoin.post(url,data=datas)
+print(ver_res.text)
